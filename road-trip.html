@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101313">
+  <meta name="description" content="A Palm Springs to Joshua Tree drive with a midcentury architecture tour and spoken stop notes.">
+  <title>Palm Springs to Joshua Tree | Architecture Drive</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --sky: #101313;
+      --panel: #171b19;
+      --ink: #eee9dc;
+      --muted: #a7aaa0;
+      --line: #3a403a;
+      --accent: #e5a55b;
+      --cool: #8dc4c0;
+      --focus: #f4bd6d;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; min-width: 320px; background: var(--sky); color: var(--ink); font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif; font-size: 16px; line-height: 1.6; }
+    a { color: var(--cool); text-underline-offset: 3px; }
+    a:hover { color: #b4e4df; }
+    a:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+    .shell { max-width: 1120px; margin: 0 auto; padding: 28px clamp(18px, 4vw, 48px) 48px; }
+    .topline { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+    .topline a { font-size: 13px; }
+    .eyebrow { margin: 0 0 8px; color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; }
+    header { padding: 34px 0 24px; border-bottom: 1px solid var(--line); }
+    h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
+    h1 { max-width: 760px; margin: 0; font-size: 42px; line-height: 1.12; }
+    .dek { max-width: 700px; margin: 12px 0 0; color: var(--muted); }
+    .route-meta { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 20px 0 0; color: var(--muted); font-size: 13px; }
+    .route-meta strong { color: var(--ink); font-weight: 600; }
+    .route-link { display: inline-flex; align-items: center; min-height: 44px; margin-top: 22px; padding: 9px 16px; border: 1px solid var(--accent); border-radius: 3px; background: #29231a; color: var(--ink); font-weight: 600; text-decoration: none; }
+    .route-link:hover { background: #382c1e; color: #fff4dd; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(280px, .8fr); gap: clamp(28px, 5vw, 64px); align-items: start; padding-top: 28px; }
+    .section-title { margin: 0 0 18px; font-size: 26px; }
+    .stops { margin: 0; padding: 0; list-style: none; counter-reset: stop; }
+    .stop { position: relative; margin-left: 9px; padding: 0 0 26px 26px; border-left: 1px solid var(--line); counter-increment: stop; }
+    .stop::before { position: absolute; top: 4px; left: -10px; display: grid; width: 19px; height: 19px; place-items: center; border: 1px solid var(--accent); border-radius: 50%; background: var(--sky); color: var(--accent); content: counter(stop); font-size: 10px; font-weight: 700; }
+    .stop:last-child { padding-bottom: 0; border-left-color: transparent; }
+    .stop h3 { margin: 0; font-size: 21px; line-height: 1.25; }
+    .address { margin: 4px 0 9px; color: var(--muted); font-size: 13px; }
+    .stop p:not(.address) { margin: 0 0 10px; }
+    .badge { display: inline-block; margin: 1px 5px 2px 0; padding: 2px 7px; border: 1px solid var(--line); border-radius: 2px; color: var(--cool); font-size: 11px; }
+    .callout { margin: 24px 0 0; padding: 14px 0 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    .sidebar { border-top: 2px solid var(--accent); padding-top: 15px; }
+    .sidebar section + section { margin-top: 26px; }
+    .sidebar h2 { margin: 0 0 10px; font-size: 23px; }
+    .sidebar p { margin: 0 0 12px; }
+    .script { margin: 12px 0; padding: 12px 0 12px 14px; border-left: 2px solid var(--cool); color: #d5d5cb; }
+    .script strong { display: block; margin-bottom: 4px; color: var(--ink); font-size: 13px; }
+    details { border-top: 1px solid var(--line); }
+    details:last-child { border-bottom: 1px solid var(--line); }
+    summary { padding: 12px 0; color: var(--ink); font-weight: 600; cursor: pointer; }
+    details p { color: var(--muted); font-size: 14px; }
+    .sources { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px; font-size: 13px; }
+    footer { margin-top: 34px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    @media (max-width: 760px) {
+      .shell { padding-top: 18px; }
+      .layout { grid-template-columns: 1fr; gap: 34px; }
+      .sidebar { max-width: 650px; }
+    }
+    @media (max-width: 480px) {
+      h1 { font-size: 34px; }
+      .topline { align-items: flex-start; flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <nav class="topline" aria-label="Site navigation">
+      <a href="./night-sky.html">Joshua Tree night sky</a>
+      <span class="eyebrow">Desert field guide</span>
+    </nav>
+
+    <header>
+      <p class="eyebrow">Palm Springs to Joshua Tree · Architecture drive</p>
+      <h1>Modernism on the northbound road</h1>
+      <p class="dek">A one-way drive from Palm Springs to Joshua Tree town, with a short downtown architecture stop and a public-street tour through a modernist neighborhood.</p>
+      <p class="route-meta"><span><strong>38 mi</strong> route</span><span><strong>About 1 hr</strong> driving, before visits</span><span><strong>2.5-4 hrs</strong> at an unhurried pace</span></p>
+      <a class="route-link" href="https://maps.apple.com/directions?destination=6554%20Park%20Blvd%2C%20Joshua%20Tree%2C%20CA%2092252&amp;waypoint=300%20S%20Palm%20Canyon%20Dr%2C%20Palm%20Springs%2C%20CA%2092262&amp;waypoint=101%20N%20Museum%20Dr%2C%20Palm%20Springs%2C%20CA%2092262&amp;waypoint=Racquet%20Club%20Estates%2C%20Palm%20Springs%2C%20CA&amp;waypoint=2901%20N%20Palm%20Canyon%20Dr%2C%20Palm%20Springs%2C%20CA%2092262&amp;mode=driving">Open the route in Apple Maps</a>
+      <p class="route-meta">Starts from your current location. Destination: Joshua Tree Visitor Center in town, not the National Park entrance.</p>
+    </header>
+
+    <div class="layout">
+      <section aria-labelledby="stops-title">
+        <h2 class="section-title" id="stops-title">The drive</h2>
+        <ol class="stops">
+          <li class="stop">
+            <h3>Architecture and Design Center</h3>
+            <p class="address">300 S Palm Canyon Drive, Palm Springs</p>
+            <p>E. Stewart Williams designed this 1961 International Style building as the Santa Fe Federal Savings and Loan. Visit the exhibitions if time allows.</p>
+            <span class="badge">30-60 min visit</span><span class="badge">Check museum hours</span>
+            <p><a href="https://www.psmuseum.org/visit/psam-a-and-d-center">Visitor details and hours</a></p>
+          </li>
+          <li class="stop">
+            <h3>Aluminaire House</h3>
+            <p class="address">101 N Museum Drive, Palm Springs</p>
+            <p>On the art museum campus, a short walk from the first stop. Designed by A. Lawrence Kocher and Albert Frey in 1931, this experimental all-metal house was first shown in New York and later reconstructed here. The exterior exhibit is free; the interior is not open.</p>
+            <span class="badge">10-20 min on foot</span>
+            <p><a href="https://www.psmuseum.org/visit/aluminaire">Museum visitor details</a></p>
+          </li>
+          <li class="stop">
+            <h3>Racquet Club Estates</h3>
+            <p class="address">Neighborhood drive-through · Palm Springs</p>
+            <p>See the postwar Alexander-built homes and low-profile desert-modern streetscape from public streets. Keep moving, don't enter private property, and avoid stopping for photos in front of homes.</p>
+            <span class="badge">Drive-by only</span>
+          </li>
+          <li class="stop">
+            <h3>Tramway Gas Station</h3>
+            <p class="address">2901 N Palm Canyon Drive, Palm Springs</p>
+            <p>Albert Frey and Robson C. Chambers designed this 1965 former gas station, known for its folded, cantilevered roof. It is listed on the National Register and now serves as the Palm Springs Visitor Center.</p>
+            <span class="badge">Exterior landmark</span><span class="badge">Check access before visiting</span>
+            <p><a href="https://npgallery.nps.gov/AssetDetail/NRIS/15000645">National Register record</a></p>
+          </li>
+          <li class="stop">
+            <h3>Joshua Tree Visitor Center</h3>
+            <p class="address">6554 Park Boulevard, Joshua Tree</p>
+            <p>A clear end point in town, with a bookstore, cafe, and restrooms. Check current hours and park conditions before continuing into the park.</p>
+            <p><a href="https://www.nps.gov/jotr/planyourvisit/visitorcenters.htm">National Park Service visitor information</a></p>
+          </li>
+        </ol>
+        <p class="callout">Apple Maps' drive-time estimate changes with traffic and the starting point. Allow extra time for parking and the walk between the two downtown museum sites.</p>
+      </section>
+
+      <aside class="sidebar" aria-label="Audio notes and setup">
+        <section aria-labelledby="audio-title">
+          <p class="eyebrow">Listen as you arrive</p>
+          <h2 id="audio-title">Short spoken notes</h2>
+          <p>Apple Maps navigates the route. iPhone Shortcuts can speak a note when you enter each stop's location radius.</p>
+          <div class="script"><strong>Downtown architecture</strong>We're in downtown Palm Springs. The Architecture and Design Center is a 1961 former savings bank designed by E. Stewart Williams. Nearby, on the museum campus, is Aluminaire House, a 1931 all-metal experimental home by Albert Frey and A. Lawrence Kocher. It was first exhibited in New York and later reconstructed here. The house is a short walk away; its interior is not open to visitors.</div>
+          <div class="script"><strong>Racquet Club Estates</strong>This is Racquet Club Estates, a Palm Springs neighborhood known for postwar Alexander-built homes and low-profile desert-modern design. Please stay on public streets, keep moving, and respect residents' privacy.</div>
+          <div class="script"><strong>Tramway Gas Station</strong>Coming up is the former Tramway Gas Station, designed by Albert Frey and Robson C. Chambers in 1965. Its broad, folded roof was designed to catch the eye of people arriving from the north. The building is now the Palm Springs Visitor Center and is on the National Register of Historic Places.</div>
+        </section>
+
+        <section aria-labelledby="shortcuts-title">
+          <p class="eyebrow">iPhone setup</p>
+          <h2 id="shortcuts-title">Shortcuts automations</h2>
+          <details>
+            <summary>Set up the arrival triggers</summary>
+            <p>Create three personal automations in Shortcuts, one for each note above. Choose the matching location in the Arrive trigger, add a Speak Text action, paste the script, and set it to Run Immediately (the option name may vary by iOS version).</p>
+            <p>Use one downtown trigger for both nearby museum sites. Adjust each radius so the note starts before you pass the landmark. Location triggers are approximate; test them with navigation active before the trip. Do not handle the phone while driving, and disable the automations afterward if you don't want them to repeat on future visits.</p>
+            <p><a href="https://support.apple.com/guide/shortcuts/add-automations-apdfbdbd7123/ios">Apple's Shortcuts automation guide</a></p>
+          </details>
+        </section>
+
+        <section aria-labelledby="sources-title">
+          <p class="eyebrow">Plan ahead</p>
+          <h2 id="sources-title">Useful links</h2>
+          <div class="sources">
+            <a href="https://developer.apple.com/documentation/mapkit/unified-map-urls">Apple Maps route link format</a>
+            <a href="https://www.psmuseum.org/visit/psam-a-and-d-center">Museum hours</a>
+            <a href="https://www.nps.gov/jotr/planyourvisit/conditions.htm">Park conditions</a>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <footer>Residential architecture is viewed only from public roads. Check attraction hours and road conditions on the day of travel. Route details are subject to change.</footer>
+  </main>
+</body>
+</html>
