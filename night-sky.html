@@ -36,6 +36,9 @@
     .chart-column { min-width: 0; }
     .chart-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 10px; }
     .chart-toolbar p { margin: 0; color: var(--muted); font-size: 13px; }
+    .date-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; max-width: 760px; margin: 8px auto 4px; }
+    .date-tabs button { min-height: 38px; border: 1px solid var(--line); border-radius: 3px; background: transparent; color: var(--muted); cursor: pointer; }
+    .date-tabs button[aria-pressed="true"] { border-color: var(--accent); background: #29231a; color: var(--ink); }
     .red-toggle { min-height: 36px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--ink); cursor: pointer; white-space: nowrap; }
     .red-toggle[aria-pressed="true"] { border-color: var(--danger); color: #ff8a78; }
     .chart-wrap { position: relative; width: 100%; max-width: 760px; margin: 0 auto; aspect-ratio: 1; }
@@ -80,6 +83,7 @@
     .observing-note strong { color: var(--ink); }
     footer { margin-top: 28px; padding-top: 13px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
     body.red-mode { --sky: #100807; --panel: #1a0d0c; --ink: #f0d0c5; --muted: #bd8075; --line: #49221d; --star: #ffb9a8; --accent: #ff6b58; --cool: #f08c79; --planet: #ff9b82; --focus: #ff9b82; }
+    body.red-mode .date-tabs button[aria-pressed="true"] { background: #28110f; }
     body.red-mode #sky-chart .sky-disc { fill: #160a09; stroke: #793a30; }
     body.red-mode #sky-chart .altitude-ring { stroke: #4b2822; }
     body.red-mode #sky-chart .azimuth-spoke { stroke: #3a201b; }
@@ -108,9 +112,9 @@
       <div>
         <p class="eyebrow">Field sky chart · 34.13° N, 116.31° W</p>
         <h1>Joshua Tree After Dark</h1>
-        <p class="place">Thursday, January 14, 2027 · Pacific Standard Time</p>
+        <p class="place" id="selected-date">Thursday, January 14, 2027 · Pacific Standard Time</p>
       </div>
-      <p class="conditions"><strong>Tonight:</strong> astronomical twilight ends near 6:26 pm. A waxing Moon is up through about 11:38 pm; its light will soften faint stars and nebulae.</p>
+      <p class="conditions"><strong>Moonlight:</strong> phase and position change by night. Its light can soften faint stars and nebulae.</p>
     </header>
 
     <section class="workspace" aria-label="Interactive night sky chart">
@@ -118,6 +122,12 @@
         <div class="chart-toolbar">
           <p>Look toward a compass direction · chart center is overhead</p>
           <button class="red-toggle" id="red-toggle" type="button" aria-pressed="false">Red-light view</button>
+        </div>
+        <div class="date-tabs" id="date-tabs" role="group" aria-label="Choose observing night">
+          <button type="button" data-day="12" aria-pressed="false">Jan 12</button>
+          <button type="button" data-day="13" aria-pressed="false">Jan 13</button>
+          <button type="button" data-day="14" aria-pressed="true">Jan 14</button>
+          <button type="button" data-day="15" aria-pressed="false">Jan 15</button>
         </div>
         <div class="chart-wrap">
           <svg id="sky-chart" viewBox="0 0 700 700" role="img" aria-labelledby="chart-title chart-description">
@@ -130,8 +140,8 @@
             <label for="time-slider">Local time</label>
             <output id="time-readout" for="time-slider">8:00 pm</output>
           </div>
-          <input id="time-slider" type="range" min="19" max="21" step="0.25" value="20" aria-label="Sky chart time, 7 to 9 pm">
-          <div class="time-marks" aria-hidden="true"><span>7:00 pm</span><span>8:00 pm</span><span>9:00 pm</span></div>
+          <input id="time-slider" type="range" min="19" max="24" step="0.25" value="20" aria-label="Sky chart time, 7 pm to midnight">
+          <div class="time-marks" aria-hidden="true"><span>7 pm</span><span>8 pm</span><span>9 pm</span><span>10 pm</span><span>11 pm</span><span>12 am</span></div>
         </div>
       </div>
 
@@ -149,13 +159,14 @@
           <li><button type="button" data-id="auriga" aria-pressed="false">Auriga <span class="target-type">Capella · naked eye</span></button></li>
           <li><button type="button" data-id="perseus" aria-pressed="false">Perseus <span class="target-type">Mirfak and the Double Cluster · binoculars</span></button></li>
           <li><button type="button" data-id="andromeda" aria-pressed="false">Andromeda Galaxy <span class="target-type">M31 · binoculars, dark adapted</span></button></li>
-          <li><button type="button" data-id="jupiter" aria-pressed="false">Jupiter <span class="target-type">Rises in the east around 7:20 pm · very bright</span></button></li>
-          <li><button type="button" data-id="saturn" aria-pressed="false">Saturn <span class="target-type">Southwest, visible throughout 7–9 pm</span></button></li>
+          <li><button type="button" data-id="jupiter" aria-pressed="false">Jupiter <span class="target-type">East after 7 pm · very bright</span></button></li>
+          <li><button type="button" data-id="mars" aria-pressed="false">Mars <span class="target-type">Rises in the east during the evening</span></button></li>
+          <li><button type="button" data-id="saturn" aria-pressed="false">Saturn <span class="target-type">Southwest, sets around 11 pm</span></button></li>
         </ul>
         <p class="observing-note"><strong>Binocular tip:</strong> brace your elbows or lean against a stable surface. Let your eyes adapt for 20 minutes. Never look at the Sun through binoculars.</p>
       </aside>
     </section>
-    <footer>Chart is oriented with north at the top and east to the right. Point your body toward the matching compass label; the map is not a view through the binoculars. Jupiter and Saturn positions use JPL Horizons samples at 7, 8, and 9 pm, interpolated between; Mercury, Venus, and Mars are below the horizon in this window.</footer>
+    <footer>Chart is oriented with north at the top and east to the right. Point your body toward the matching compass label; the map is not a view through the binoculars. Planet positions use JPL Horizons samples across these nights, interpolated between. Mercury and Venus remain below the horizon during these evening hours.</footer>
   </main>
 
   <script>
@@ -227,17 +238,28 @@
       {
         id: "jupiter", name: "Jupiter", magnitude: -2.49,
         samples: [
-          { hour: 19, azimuth: 70.057999, altitude: -4.034567 },
-          { hour: 20, azimuth: 78.416493, altitude: 7.943749 },
-          { hour: 21, azimuth: 86.477982, altitude: 20.279418 }
+          [0, 68.851759, -5.749551], [3, 93.810448, 30.902707], [6, 138.984278, 64.746944],
+          [24, 69.457256, -4.894759], [27, 94.418488, 31.811073], [30, 141.011397, 65.350435],
+          [48, 70.057999, -4.034567], [51, 95.034299, 32.721054], [54, 143.128729, 65.931188],
+          [72, 70.654197, -3.169134], [75, 95.658417, 33.632482], [78, 145.339242, 66.487187]
+        ]
+      },
+      {
+        id: "mars", name: "Mars", magnitude: -0.5,
+        samples: [
+          [0, 61.363504, -19.000959], [3, 87.802994, 16.791286], [6, 120.595040, 52.828475],
+          [24, 62.026402, -18.233668], [27, 88.319320, 17.653396], [30, 121.684347, 53.579400],
+          [48, 62.685259, -17.449847], [51, 88.840040, 18.528522], [54, 122.817143, 54.334242],
+          [72, 63.340112, -16.649510], [75, 89.365485, 19.416660], [78, 123.996718, 55.092299]
         ]
       },
       {
         id: "saturn", name: "Saturn", magnitude: 0.769,
         samples: [
-          { hour: 19, azimuth: 231.241905, altitude: 44.520905 },
-          { hour: 20, azimuth: 245.093106, altitude: 33.932408 },
-          { hour: 21, azimuth: 255.795036, altitude: 22.206449 }
+          [0, 229.155499, 45.665295], [3, 263.751783, 11.450496], [6, 290.578664, -25.306261],
+          [24, 230.209537, 45.097017], [27, 264.313441, 10.697593], [30, 291.257495, -26.010485],
+          [48, 231.241905, 44.520905], [51, 264.872259, 9.945437], [54, 291.944255, -26.709770],
+          [72, 232.253224, 43.937344], [75, 265.428462, 9.194091], [78, 292.639235, -27.403991]
         ]
       }
     ];
@@ -250,8 +272,9 @@
       auriga: { title: "Auriga", star: "capella", copy: "Find Capella, a brilliant golden-white star high above Orion and Taurus. Nearby Elnath marks the northern tip of Taurus' horn.", target: "Capella is one of the easiest winter stars to spot. Sweep the region around it with binoculars for rich Milky Way star fields." },
       perseus: { title: "Perseus", star: "mirfak", copy: "Between Cassiopeia's W and the Pleiades, look for Mirfak, the brightest star in Perseus. A loose arc of stars gathers around it.", target: "Aim binoculars about halfway from Perseus toward Cassiopeia to find the Double Cluster. It is a rewarding pair of hazy star patches; moonlight may soften the view." },
       andromeda: { title: "Andromeda Galaxy · M31", star: "beta-andromedae", copy: "Use the Great Square of Pegasus as a starting point, then follow the curved chain of Andromeda's stars away from Alpheratz. Mirach is the bright middle star.", target: "From Mirach, move north to Mu Andromedae, then continue about the same distance again. Under a dark, transparent sky M31 is a faint oval smudge; binoculars help, but moonlight and town lights make it challenging." },
-      jupiter: { title: "Jupiter", planet: "jupiter", copy: "Jupiter rises low in the east around 7:20 pm. At first it will be close to the horizon; let it climb above nearby terrain before looking.", target: "It is unmistakably bright (about magnitude −2.5). With steady, braced binoculars, you may spot tiny points of light nearby: its four largest moons." },
-      saturn: { title: "Saturn", planet: "saturn", copy: "Look southwest for a steady, golden point of light. Saturn is already well up at 7 pm and drifts lower toward the west during the evening.", target: "Saturn is bright enough to find without binoculars (about magnitude +0.8). Binoculars may make it look slightly oval, but a telescope is needed to clearly see the rings." }
+      jupiter: { title: "Jupiter", planet: "jupiter", copy: "Look east for the brightest planet. Jupiter clears the horizon shortly after 7 pm and climbs quickly during the evening.", target: "It is unmistakably bright (about magnitude −2.5). With steady, braced binoculars, you may spot tiny points of light nearby: its four largest moons." },
+      mars: { title: "Mars", planet: "mars", copy: "Look east for a steady orange point of light. Mars rises during the evening and is well above the horizon by 10 pm.", target: "Mars is bright enough to spot with the naked eye. Binoculars make its color easier to notice, but it remains a tiny point rather than a disk." },
+      saturn: { title: "Saturn", planet: "saturn", copy: "Look southwest for a steady, golden point of light. Saturn is high at 7 pm, then sinks toward the western horizon.", target: "Saturn is bright enough to find without binoculars (about magnitude +0.8) and sets around 11 pm. Binoculars may make it look slightly oval, but a telescope is needed to clearly see the rings." }
     };
 
     const svg = document.getElementById("sky-chart");
@@ -261,7 +284,9 @@
     const directionReadout = document.getElementById("direction-readout");
     const altitudeReadout = document.getElementById("altitude-readout");
     const timeReadout = document.getElementById("time-readout");
+    const selectedDateReadout = document.getElementById("selected-date");
     let selectedId = "orion";
+    let selectedDay = 14;
 
     function degrees(value) { return ((value % 360) + 360) % 360; }
     function julianDate(date) { return date.getTime() / 86400000 + 2440587.5; }
@@ -331,30 +356,41 @@
       return { x: CENTER.x + radius * Math.sin(azimuth), y: CENTER.y - radius * Math.cos(azimuth) };
     }
 
-    function localDateAt(hour) {
+    function localDateAt(day, hour) {
       const wholeHour = Math.floor(hour);
       const minutes = Math.round((hour - wholeHour) * 60);
-      return new Date(Date.UTC(2027, 0, 14, wholeHour + 8, minutes));
+      return new Date(Date.UTC(2027, 0, day, wholeHour + 8, minutes));
     }
 
     function formatTime(hour) {
-      const normalizedHour = Math.floor(hour);
-      const minutes = Math.round((hour - normalizedHour) * 60);
-      return `${normalizedHour > 12 ? normalizedHour - 12 : normalizedHour}:${String(minutes).padStart(2, "0")} pm`;
+      const wholeHour = Math.floor(hour);
+      const normalizedHour = wholeHour % 24;
+      const minutes = Math.round((hour - wholeHour) * 60);
+      const displayHour = normalizedHour % 12 || 12;
+      const period = normalizedHour >= 12 ? "pm" : "am";
+      return `${displayHour}:${String(minutes).padStart(2, "0")} ${period}`;
     }
 
     function compassDirection(azimuth) {
       return ["North", "North-northeast", "Northeast", "East-northeast", "East", "East-southeast", "Southeast", "South-southeast", "South", "South-southwest", "Southwest", "West-southwest", "West", "West-northwest", "Northwest", "North-northwest"][Math.round(azimuth / 22.5) % 16];
     }
 
-    function planetPosition(planet, hour) {
-      const lowerIndex = hour < 20 ? 0 : 1;
-      const lower = planet.samples[lowerIndex];
-      const upper = planet.samples[lowerIndex + 1];
-      const fraction = (hour - lower.hour) / (upper.hour - lower.hour);
+    function planetPosition(planet, day, hour) {
+      const offset = (day - 12) * 24 + hour - 19;
+      const samples = planet.samples;
+      if (offset <= samples[0][0]) return { azimuth: samples[0][1], altitude: samples[0][2] };
+      if (offset >= samples[samples.length - 1][0]) {
+        const last = samples[samples.length - 1];
+        return { azimuth: last[1], altitude: last[2] };
+      }
+      const upperIndex = samples.findIndex(([sampleOffset]) => sampleOffset >= offset);
+      const lower = samples[upperIndex - 1];
+      const upper = samples[upperIndex];
+      const fraction = (offset - lower[0]) / (upper[0] - lower[0]);
+      const azimuthDelta = ((upper[1] - lower[1] + 540) % 360) - 180;
       return {
-        azimuth: lower.azimuth + (upper.azimuth - lower.azimuth) * fraction,
-        altitude: lower.altitude + (upper.altitude - lower.altitude) * fraction
+        azimuth: degrees(lower[1] + azimuthDelta * fraction),
+        altitude: lower[2] + (upper[2] - lower[2]) * fraction
       };
     }
 
@@ -368,16 +404,17 @@
 
     function renderChart() {
       const hour = Number(timeSlider.value);
-      const date = localDateAt(hour);
+      const date = localDateAt(selectedDay, hour);
       const positions = new Map(stars.map((star) => [star.id, { ...star, ...horizontal(star.ra, star.dec, date) }]));
       const visiblePositions = new Map([...positions].filter(([, position]) => position.altitude > 0));
-      const planetPositions = new Map(planets.map((planet) => [planet.id, planetPosition(planet, hour)]));
+      const planetPositions = new Map(planets.map((planet) => [planet.id, planetPosition(planet, selectedDay, hour)]));
       const moonCoordinates = moonEquatorial(date);
       const moon = horizontal(moonCoordinates.ra, moonCoordinates.dec, date);
       const activeGroup = selectedId === "pleiades" ? "taurus" : selectedId;
       const title = selectedId in objects ? objects[selectedId].title : "Joshua Tree night sky";
+      const nightLabel = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(2027, 0, selectedDay)));
       const nodes = [
-        el("title", { id: "chart-title" }, `Visible sky above Joshua Tree at ${formatTime(hour)}`),
+        el("title", { id: "chart-title" }, `Visible sky above Joshua Tree on January ${selectedDay} at ${formatTime(hour)}`),
         el("desc", { id: "chart-description" }, `${title} and visible bright stars. The outer circle is the horizon; north is at the top and east is on the right.`),
         el("circle", { cx: CENTER.x, cy: CENTER.y, r: RADIUS, class: "sky-disc" })
       ];
@@ -455,6 +492,7 @@
 
       nodes.push(el("text", { x: CENTER.x, y: 682, class: "below-label" }, "Outer edge = horizon · inner rings = 30° and 60° altitude"));
       svg.replaceChildren(...nodes);
+      selectedDateReadout.textContent = `${nightLabel} · Pacific Standard Time`;
       timeReadout.value = formatTime(hour);
       timeReadout.textContent = formatTime(hour);
       if (selectedId in objects) {
@@ -479,6 +517,13 @@
     }
 
     timeSlider.addEventListener("input", renderChart);
+    document.getElementById("date-tabs").addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-day]");
+      if (!button) return;
+      selectedDay = Number(button.dataset.day);
+      document.querySelectorAll("#date-tabs button").forEach((tab) => tab.setAttribute("aria-pressed", String(Number(tab.dataset.day) === selectedDay)));
+      renderChart();
+    });
     document.getElementById("target-list").addEventListener("click", (event) => {
       const button = event.target.closest("button[data-id]");
       if (button) select(button.dataset.id);
