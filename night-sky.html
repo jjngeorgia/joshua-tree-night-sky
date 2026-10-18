@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101313">
+  <title>Joshua Tree | Night Sky, January 14</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --sky: #101313;
+      --panel: #171b19;
+      --ink: #eee9dc;
+      --muted: #a7aaa0;
+      --line: #3a403a;
+      --star: #f3dfb1;
+      --accent: #e5a55b;
+      --cool: #8dc4c0;
+      --planet: #f2ba6a;
+      --danger: #e45c4d;
+      --focus: #f4bd6d;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; background: var(--sky); color: var(--ink); font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif; font-size: 15px; line-height: 1.5; }
+    button, input { font: inherit; }
+    button:focus-visible, input:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+    .shell { max-width: 1280px; margin: 0 auto; padding: 30px clamp(16px, 4vw, 48px) 40px; }
+    header { display: flex; align-items: end; justify-content: space-between; gap: 24px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+    .eyebrow { margin: 0 0 7px; color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; }
+    h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(28px, 4vw, 42px); font-weight: 400; line-height: 1.1; }
+    .place { margin: 8px 0 0; color: var(--muted); }
+    .conditions { max-width: 330px; margin: 0; color: var(--muted); font-size: 13px; text-align: right; }
+    .conditions strong { color: var(--ink); font-weight: 600; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(270px, 340px); gap: clamp(22px, 4vw, 48px); padding-top: 24px; align-items: start; }
+    .chart-column { min-width: 0; }
+    .chart-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 10px; }
+    .chart-toolbar p { margin: 0; color: var(--muted); font-size: 13px; }
+    .red-toggle { min-height: 36px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--ink); cursor: pointer; white-space: nowrap; }
+    .red-toggle[aria-pressed="true"] { border-color: var(--danger); color: #ff8a78; }
+    .chart-wrap { position: relative; width: 100%; max-width: 760px; margin: 0 auto; aspect-ratio: 1; }
+    #sky-chart { display: block; width: 100%; height: 100%; overflow: visible; }
+    #sky-chart .sky-disc { fill: #131917; stroke: #60665c; stroke-width: 1.4; }
+    #sky-chart .altitude-ring { fill: none; stroke: #39413b; stroke-width: 1; stroke-dasharray: 3 5; }
+    #sky-chart .azimuth-spoke { stroke: #303833; stroke-width: 1; }
+    #sky-chart .compass { fill: #a7aaa0; font-size: 12px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+    #sky-chart .altitude-label { fill: #798078; font-size: 10px; text-anchor: start; }
+    #sky-chart .constellation-line { fill: none; stroke: #778178; stroke-width: 1.25; stroke-opacity: .7; }
+    #sky-chart .constellation-line.selected { stroke: var(--accent); stroke-width: 2.4; stroke-opacity: 1; }
+    #sky-chart .star-dot { fill: var(--star); stroke: #101313; stroke-width: 1.5; }
+    #sky-chart .star-dot.selected { fill: #fff3cd; stroke: var(--accent); stroke-width: 2.5; }
+    #sky-chart .star-label { fill: #d9d6cb; font-size: 10px; paint-order: stroke; stroke: #131917; stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
+    #sky-chart .object-mark { fill: none; stroke: var(--cool); stroke-width: 1.8; cursor: pointer; }
+    #sky-chart .object-mark.selected { stroke: #fff; stroke-width: 2.7; }
+    #sky-chart .object-label { fill: var(--cool); font-size: 10px; paint-order: stroke; stroke: #131917; stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
+    #sky-chart .moon-mark { fill: #e9d3a0; stroke: #fff0c7; stroke-width: 1.5; }
+    #sky-chart .moon-label { fill: #eddda9; font-size: 11px; }
+    #sky-chart .planet-mark { fill: var(--planet); stroke: #fff0c7; stroke-width: 1.5; }
+    #sky-chart .planet-label { fill: var(--planet); font-size: 11px; font-weight: 700; paint-order: stroke; stroke: #131917; stroke-width: 3px; stroke-linejoin: round; }
+    #sky-chart .below-label { fill: #788078; font-size: 10px; text-anchor: middle; }
+    #sky-chart [tabindex="0"]:focus { outline: none; filter: drop-shadow(0 0 4px #ffe3a5); }
+    .time-control { max-width: 760px; margin: 0 auto; padding: 13px 2px 0; border-top: 1px solid var(--line); }
+    .time-label { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 5px; }
+    .time-label label { font-weight: 600; }
+    #time-readout { color: var(--accent); font-variant-numeric: tabular-nums; }
+    input[type="range"] { display: block; width: 100%; accent-color: var(--accent); cursor: pointer; }
+    .time-marks { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+    .sidebar { border-top: 2px solid var(--accent); padding-top: 14px; }
+    .sidebar h2 { margin: 0 0 12px; font-family: Georgia, "Times New Roman", serif; font-size: 23px; font-weight: 400; }
+    #selection-title { color: var(--accent); }
+    #finder-copy { min-height: 80px; margin: 0 0 17px; color: #d0d0c6; }
+    .direction-line { display: flex; gap: 10px; align-items: baseline; margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+    .direction-line strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+    .target-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+    .target-list button { width: 100%; padding: 9px 10px; border: 1px solid transparent; border-radius: 3px; background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
+    .target-list button:hover { background: var(--panel); }
+    .target-list button[aria-pressed="true"] { border-color: #655238; background: var(--panel); }
+    .target-list .target-type { display: block; color: var(--muted); font-size: 11px; }
+    .observing-note { margin: 22px 0 0; padding: 13px 0 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    .observing-note strong { color: var(--ink); }
+    footer { margin-top: 28px; padding-top: 13px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    body.red-mode { --sky: #100807; --panel: #1a0d0c; --ink: #f0d0c5; --muted: #bd8075; --line: #49221d; --star: #ffb9a8; --accent: #ff6b58; --cool: #f08c79; --planet: #ff9b82; --focus: #ff9b82; }
+    body.red-mode #sky-chart .sky-disc { fill: #160a09; stroke: #793a30; }
+    body.red-mode #sky-chart .altitude-ring { stroke: #4b2822; }
+    body.red-mode #sky-chart .azimuth-spoke { stroke: #3a201b; }
+    body.red-mode #sky-chart .constellation-line { stroke: #a3483d; }
+    body.red-mode #sky-chart .star-dot { stroke: #160a09; }
+    body.red-mode #sky-chart .star-label, body.red-mode #sky-chart .object-label { stroke: #160a09; }
+    body.red-mode #sky-chart .planet-label { stroke: #160a09; }
+    @media (max-width: 760px) {
+      .shell { padding-top: 20px; }
+      header { align-items: start; flex-direction: column; gap: 12px; }
+      .conditions { text-align: left; }
+      .workspace { grid-template-columns: 1fr; gap: 27px; }
+      .chart-wrap { width: min(100%, 620px); }
+      .sidebar { max-width: 620px; }
+    }
+    @media (max-width: 420px) {
+      .chart-toolbar { align-items: start; flex-direction: column; gap: 8px; }
+      #sky-chart .star-label, #sky-chart .object-label { font-size: 9px; }
+      #sky-chart .compass { font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <p class="eyebrow">Field sky chart · 34.13° N, 116.31° W</p>
+        <h1>Joshua Tree After Dark</h1>
+        <p class="place">Thursday, January 14, 2027 · Pacific Standard Time</p>
+      </div>
+      <p class="conditions"><strong>Tonight:</strong> astronomical twilight ends near 6:26 pm. A waxing Moon is up through about 11:38 pm; its light will soften faint stars and nebulae.</p>
+    </header>
+
+    <section class="workspace" aria-label="Interactive night sky chart">
+      <div class="chart-column">
+        <div class="chart-toolbar">
+          <p>Look toward a compass direction · chart center is overhead</p>
+          <button class="red-toggle" id="red-toggle" type="button" aria-pressed="false">Red-light view</button>
+        </div>
+        <div class="chart-wrap">
+          <svg id="sky-chart" viewBox="0 0 700 700" role="img" aria-labelledby="chart-title chart-description">
+            <title id="chart-title">Visible sky above Joshua Tree</title>
+            <desc id="chart-description">A compass-oriented sky chart. The outer circle is the horizon; the center is directly overhead. East is on the right.</desc>
+          </svg>
+        </div>
+        <div class="time-control">
+          <div class="time-label">
+            <label for="time-slider">Local time</label>
+            <output id="time-readout" for="time-slider">8:00 pm</output>
+          </div>
+          <input id="time-slider" type="range" min="19" max="21" step="0.25" value="20" aria-label="Sky chart time, 7 to 9 pm">
+          <div class="time-marks" aria-hidden="true"><span>7:00 pm</span><span>8:00 pm</span><span>9:00 pm</span></div>
+        </div>
+      </div>
+
+      <aside class="sidebar" aria-live="polite">
+        <p class="eyebrow">Finder</p>
+        <h2 id="selection-title">Start with Orion</h2>
+        <p class="direction-line"><span>In the sky</span><strong id="direction-readout">Southeast</strong><span id="altitude-readout">· 25° up</span></p>
+        <p id="finder-copy">Find three evenly spaced stars in a short row: Orion's Belt. It rises in the southeast this evening. Betelgeuse is the bright reddish star above the belt; blue-white Rigel sits below it.</p>
+        <p class="eyebrow">Tonight's route</p>
+        <ul class="target-list" id="target-list">
+          <li><button type="button" data-id="orion" aria-pressed="true">Orion <span class="target-type">Belt, Betelgeuse, Rigel · naked eye</span></button></li>
+          <li><button type="button" data-id="taurus" aria-pressed="false">Taurus <span class="target-type">Aldebaran and the Hyades · binoculars</span></button></li>
+          <li><button type="button" data-id="pleiades" aria-pressed="false">Pleiades <span class="target-type">Seven Sisters · binoculars</span></button></li>
+          <li><button type="button" data-id="gemini" aria-pressed="false">Gemini <span class="target-type">Castor and Pollux · naked eye</span></button></li>
+          <li><button type="button" data-id="auriga" aria-pressed="false">Auriga <span class="target-type">Capella · naked eye</span></button></li>
+          <li><button type="button" data-id="perseus" aria-pressed="false">Perseus <span class="target-type">Mirfak and the Double Cluster · binoculars</span></button></li>
+          <li><button type="button" data-id="andromeda" aria-pressed="false">Andromeda Galaxy <span class="target-type">M31 · binoculars, dark adapted</span></button></li>
+          <li><button type="button" data-id="jupiter" aria-pressed="false">Jupiter <span class="target-type">Rises in the east around 7:20 pm · very bright</span></button></li>
+          <li><button type="button" data-id="saturn" aria-pressed="false">Saturn <span class="target-type">Southwest, visible throughout 7–9 pm</span></button></li>
+        </ul>
+        <p class="observing-note"><strong>Binocular tip:</strong> brace your elbows or lean against a stable surface. Let your eyes adapt for 20 minutes. Never look at the Sun through binoculars.</p>
+      </aside>
+    </section>
+    <footer>Chart is oriented with north at the top and east to the right. Point your body toward the matching compass label; the map is not a view through the binoculars. Jupiter and Saturn positions use JPL Horizons samples at 7, 8, and 9 pm, interpolated between; Mercury, Venus, and Mars are below the horizon in this window.</footer>
+  </main>
+
+  <script>
+    "use strict";
+
+    const LOCATION = { latitude: 34.1341, longitude: -116.3131 };
+    const CENTER = { x: 350, y: 350 };
+    const RADIUS = 285;
+    const DEG = Math.PI / 180;
+
+    const stars = [
+      { id: "capella", name: "Capella", ra: 5.2782, dec: 45.998, mag: 0.08, group: "auriga" },
+      { id: "menkalinan", name: "Menkalinan", ra: 5.9921, dec: 44.947, mag: 1.9, group: "auriga" },
+      { id: "mahasim", name: "Mahasim", ra: 5.9921, dec: 37.212, mag: 2.7, group: "auriga" },
+      { id: "elnath", name: "Elnath", ra: 5.4382, dec: 28.6075, mag: 1.65, group: "taurus" },
+      { id: "aldebaran", name: "Aldebaran", ra: 4.5987, dec: 16.5093, mag: 0.85, group: "taurus" },
+      { id: "hyadum", name: "Hyadum I", ra: 4.3299, dec: 15.627, mag: 3.65, group: "taurus" },
+      { id: "theta-tauri", name: "Theta Tauri", ra: 4.4777, dec: 15.962, mag: 3.4, group: "taurus" },
+      { id: "pleione", name: "Pleione", ra: 3.741, dec: 24.114, mag: 5.05, group: "taurus" },
+      { id: "electra", name: "Electra", ra: 3.7471, dec: 24.114, mag: 3.7, group: "taurus" },
+      { id: "maia", name: "Maia", ra: 3.7638, dec: 24.367, mag: 3.9, group: "taurus" },
+      { id: "taygeta", name: "Taygeta", ra: 3.7532, dec: 24.467, mag: 4.3, group: "taurus" },
+      { id: "merope", name: "Merope", ra: 3.7738, dec: 23.948, mag: 4.2, group: "taurus" },
+      { id: "alcyone", name: "Alcyone", ra: 3.7914, dec: 24.105, mag: 2.87, group: "taurus" },
+      { id: "celaeno", name: "Celaeno", ra: 3.7565, dec: 24.289, mag: 5.45, group: "taurus" },
+      { id: "bellatrix", name: "Bellatrix", ra: 5.4189, dec: 6.3497, mag: 1.64, group: "orion" },
+      { id: "betelgeuse", name: "Betelgeuse", ra: 5.9195, dec: 7.4071, mag: 0.5, group: "orion" },
+      { id: "meissa", name: "Meissa", ra: 5.5856, dec: 9.9342, mag: 3.39, group: "orion" },
+      { id: "mintaka", name: "Mintaka", ra: 5.5334, dec: -0.2991, mag: 2.23, group: "orion" },
+      { id: "alnilam", name: "Alnilam", ra: 5.6036, dec: -1.2019, mag: 1.69, group: "orion" },
+      { id: "alnitak", name: "Alnitak", ra: 5.6793, dec: -1.9426, mag: 1.74, group: "orion" },
+      { id: "saiph", name: "Saiph", ra: 5.7959, dec: -9.6696, mag: 2.07, group: "orion" },
+      { id: "rigel", name: "Rigel", ra: 5.2423, dec: -8.2016, mag: 0.13, group: "orion" },
+      { id: "castor", name: "Castor", ra: 7.5767, dec: 31.8883, mag: 1.58, group: "gemini" },
+      { id: "pollux", name: "Pollux", ra: 7.7553, dec: 28.0262, mag: 1.14, group: "gemini" },
+      { id: "mekbuda", name: "Mekbuda", ra: 6.7322, dec: 20.1385, mag: 3.79, group: "gemini" },
+      { id: "alhena", name: "Alhena", ra: 6.6285, dec: 16.3993, mag: 1.93, group: "gemini" },
+      { id: "tejat", name: "Tejat", ra: 6.3827, dec: 22.5136, mag: 2.88, group: "gemini" },
+      { id: "propus", name: "Propus", ra: 6.2479, dec: 22.5068, mag: 3.36, group: "gemini" },
+      { id: "mirfak", name: "Mirfak", ra: 3.4054, dec: 49.8612, mag: 1.79, group: "perseus" },
+      { id: "algol", name: "Algol", ra: 3.1361, dec: 40.9556, mag: 2.12, group: "perseus" },
+      { id: "zeta-persei", name: "Zeta Persei", ra: 3.9022, dec: 31.8836, mag: 2.85, group: "perseus" },
+      { id: "epsilon-persei", name: "Epsilon Persei", ra: 3.9642, dec: 40.0102, mag: 2.89, group: "perseus" },
+      { id: "delta-persei", name: "Delta Persei", ra: 3.7154, dec: 47.7876, mag: 3.01, group: "perseus" },
+      { id: "gamma-andromedae", name: "Almach", ra: 2.0649, dec: 42.3297, mag: 2.1, group: "andromeda" },
+      { id: "beta-andromedae", name: "Mirach", ra: 1.1622, dec: 35.6206, mag: 2.05, group: "andromeda" },
+      { id: "alpheratz", name: "Alpheratz", ra: 0.1398, dec: 29.0904, mag: 2.06, group: "andromeda" },
+      { id: "sirius", name: "Sirius", ra: 6.7525, dec: -16.7161, mag: -1.46, group: "canis-major" },
+      { id: "procyon", name: "Procyon", ra: 7.655, dec: 5.225, mag: 0.34, group: "canis-minor" },
+      { id: "polaris", name: "Polaris", ra: 2.5303, dec: 89.2641, mag: 1.98, group: "ursa-minor" },
+      { id: "schedar", name: "Schedar", ra: 0.6751, dec: 56.5373, mag: 2.24, group: "cassiopeia" },
+      { id: "caph", name: "Caph", ra: 0.1529, dec: 59.1498, mag: 2.28, group: "cassiopeia" },
+      { id: "gamma-cas", name: "Gamma Cas", ra: 0.9451, dec: 60.7167, mag: 2.47, group: "cassiopeia" },
+      { id: "ruchbah", name: "Ruchbah", ra: 1.4303, dec: 60.2353, mag: 2.68, group: "cassiopeia" },
+      { id: "segin", name: "Segin", ra: 1.9066, dec: 63.67, mag: 3.37, group: "cassiopeia" }
+    ];
+
+    const lines = [
+      ["orion", ["meissa", "betelgeuse", "bellatrix", "betelgeuse", "alnitak", "alnilam", "mintaka", "rigel", "saiph", "alnitak"]],
+      ["taurus", ["elnath", "aldebaran", "hyadum", "theta-tauri", "aldebaran"]],
+      ["gemini", ["castor", "pollux", "tejat", "propus", "alhena", "mekbuda", "pollux"]],
+      ["auriga", ["capella", "menkalinan", "mahasim", "elnath", "capella"]],
+      ["perseus", ["mirfak", "algol", "zeta-persei", "epsilon-persei", "mirfak", "delta-persei", "algol"]],
+      ["andromeda", ["alpheratz", "beta-andromedae", "gamma-andromedae"]],
+      ["cassiopeia", ["caph", "schedar", "gamma-cas", "ruchbah", "segin"]]
+    ];
+
+    const planets = [
+      {
+        id: "jupiter", name: "Jupiter", magnitude: -2.49,
+        samples: [
+          { hour: 19, azimuth: 70.057999, altitude: -4.034567 },
+          { hour: 20, azimuth: 78.416493, altitude: 7.943749 },
+          { hour: 21, azimuth: 86.477982, altitude: 20.279418 }
+        ]
+      },
+      {
+        id: "saturn", name: "Saturn", magnitude: 0.769,
+        samples: [
+          { hour: 19, azimuth: 231.241905, altitude: 44.520905 },
+          { hour: 20, azimuth: 245.093106, altitude: 33.932408 },
+          { hour: 21, azimuth: 255.795036, altitude: 22.206449 }
+        ]
+      }
+    ];
+
+    const objects = {
+      orion: { title: "Orion", star: "betelgeuse", copy: "Find three evenly spaced stars in a short row: Orion's Belt. It is in the southeast around 7 pm and shifts toward the south as the evening goes on. Betelgeuse is the bright reddish star above the belt; blue-white Rigel sits below it.", target: "Orion Nebula (M42): sweep south from the Belt to the short line of stars called the Sword. The nebula is the fuzzy middle patch; binoculars show its glow best after your eyes adapt." },
+      taurus: { title: "Taurus", star: "aldebaran", copy: "Extend Orion's Belt toward the west to a bright orange star: Aldebaran, the eye of Taurus. The V-shaped Hyades cluster spreads around it.", target: "Hyades: scan the broad V around Aldebaran with binoculars. Aldebaran only appears in the cluster's line of sight; it is not a Hyades member." },
+      pleiades: { title: "Pleiades", star: "alcyone", copy: "From Aldebaran, continue west-northwest about one fist-width at arm's length to a tiny, tight dipper of stars. This is the Pleiades, or Seven Sisters.", target: "The Pleiades (M45) fit beautifully in binoculars. Start with the unaided eye, then sweep slowly; moonlight will reduce contrast, but the brighter stars remain easy." },
+      gemini: { title: "Gemini", star: "castor", copy: "Look east of Orion for two bright stars side by side: Castor and Pollux mark the twins' heads. Pollux is the slightly brighter, warmer-looking one.", target: "Follow the two roughly parallel chains of stars down from Castor and Pollux. Compare the pair unaided; binoculars bring out the fainter body stars." },
+      auriga: { title: "Auriga", star: "capella", copy: "Find Capella, a brilliant golden-white star high above Orion and Taurus. Nearby Elnath marks the northern tip of Taurus' horn.", target: "Capella is one of the easiest winter stars to spot. Sweep the region around it with binoculars for rich Milky Way star fields." },
+      perseus: { title: "Perseus", star: "mirfak", copy: "Between Cassiopeia's W and the Pleiades, look for Mirfak, the brightest star in Perseus. A loose arc of stars gathers around it.", target: "Aim binoculars about halfway from Perseus toward Cassiopeia to find the Double Cluster. It is a rewarding pair of hazy star patches; moonlight may soften the view." },
+      andromeda: { title: "Andromeda Galaxy · M31", star: "beta-andromedae", copy: "Use the Great Square of Pegasus as a starting point, then follow the curved chain of Andromeda's stars away from Alpheratz. Mirach is the bright middle star.", target: "From Mirach, move north to Mu Andromedae, then continue about the same distance again. Under a dark, transparent sky M31 is a faint oval smudge; binoculars help, but moonlight and town lights make it challenging." },
+      jupiter: { title: "Jupiter", planet: "jupiter", copy: "Jupiter rises low in the east around 7:20 pm. At first it will be close to the horizon; let it climb above nearby terrain before looking.", target: "It is unmistakably bright (about magnitude −2.5). With steady, braced binoculars, you may spot tiny points of light nearby: its four largest moons." },
+      saturn: { title: "Saturn", planet: "saturn", copy: "Look southwest for a steady, golden point of light. Saturn is already well up at 7 pm and drifts lower toward the west during the evening.", target: "Saturn is bright enough to find without binoculars (about magnitude +0.8). Binoculars may make it look slightly oval, but a telescope is needed to clearly see the rings." }
+    };
+
+    const svg = document.getElementById("sky-chart");
+    const timeSlider = document.getElementById("time-slider");
+    const selectedTitle = document.getElementById("selection-title");
+    const finderCopy = document.getElementById("finder-copy");
+    const directionReadout = document.getElementById("direction-readout");
+    const altitudeReadout = document.getElementById("altitude-readout");
+    const timeReadout = document.getElementById("time-readout");
+    let selectedId = "orion";
+
+    function degrees(value) { return ((value % 360) + 360) % 360; }
+    function julianDate(date) { return date.getTime() / 86400000 + 2440587.5; }
+
+    function localSiderealDegrees(date) {
+      const jd = julianDate(date);
+      const centuries = (jd - 2451545) / 36525;
+      const gmst = 280.46061837 + 360.98564736629 * (jd - 2451545) + 0.000387933 * centuries ** 2 - centuries ** 3 / 38710000;
+      return degrees(gmst + LOCATION.longitude);
+    }
+
+    function horizontal(raHours, decDegrees, date) {
+      const hourAngle = (localSiderealDegrees(date) - raHours * 15) * DEG;
+      const declination = decDegrees * DEG;
+      const latitude = LOCATION.latitude * DEG;
+      const sinAltitude = Math.sin(latitude) * Math.sin(declination) + Math.cos(latitude) * Math.cos(declination) * Math.cos(hourAngle);
+      const altitude = Math.asin(Math.max(-1, Math.min(1, sinAltitude)));
+      const azimuth = Math.atan2(Math.sin(hourAngle), Math.cos(hourAngle) * Math.sin(latitude) - Math.tan(declination) * Math.cos(latitude)) + Math.PI;
+      return { altitude: altitude / DEG, azimuth: degrees(azimuth / DEG) };
+    }
+
+    function moonEquatorial(date) {
+      const days = julianDate(date) - 2451543.5;
+      const node = degrees(125.1228 - 0.0529538083 * days) * DEG;
+      const inclination = 5.1454 * DEG;
+      const periapsis = degrees(318.0634 + 0.1643573223 * days) * DEG;
+      const eccentricity = 0.0549;
+      const meanAnomalyDegrees = degrees(115.3654 + 13.0649929509 * days);
+      const meanAnomaly = meanAnomalyDegrees * DEG;
+      const eccentricAnomaly = meanAnomaly + eccentricity * Math.sin(meanAnomaly) * (1 + eccentricity * Math.cos(meanAnomaly));
+      const xOrbit = Math.cos(eccentricAnomaly) - eccentricity;
+      const yOrbit = Math.sqrt(1 - eccentricity ** 2) * Math.sin(eccentricAnomaly);
+      const trueAnomaly = Math.atan2(yOrbit, xOrbit);
+      const distance = Math.hypot(xOrbit, yOrbit);
+      const longitudeArgument = trueAnomaly + periapsis;
+      const xEcliptic = distance * (Math.cos(node) * Math.cos(longitudeArgument) - Math.sin(node) * Math.sin(longitudeArgument) * Math.cos(inclination));
+      const yEcliptic = distance * (Math.sin(node) * Math.cos(longitudeArgument) + Math.cos(node) * Math.sin(longitudeArgument) * Math.cos(inclination));
+      const zEcliptic = distance * Math.sin(longitudeArgument) * Math.sin(inclination);
+      let longitude = Math.atan2(yEcliptic, xEcliptic) / DEG;
+      let latitude = Math.atan2(zEcliptic, Math.hypot(xEcliptic, yEcliptic)) / DEG;
+      const sunMeanLongitude = degrees(280.46 + 0.9856474 * days);
+      const sunMeanAnomaly = degrees(357.528 + 0.9856003 * days);
+      const moonMeanLongitude = degrees(node / DEG + periapsis / DEG + meanAnomalyDegrees);
+      const elongation = degrees(moonMeanLongitude - sunMeanLongitude);
+      const argumentLatitude = degrees(moonMeanLongitude - node / DEG);
+      const radians = (angle) => angle * DEG;
+      longitude += -1.274 * Math.sin(radians(meanAnomalyDegrees - 2 * elongation)) + 0.658 * Math.sin(radians(2 * elongation))
+        - 0.186 * Math.sin(radians(sunMeanAnomaly)) - 0.059 * Math.sin(radians(2 * meanAnomalyDegrees - 2 * elongation))
+        - 0.057 * Math.sin(radians(meanAnomalyDegrees - 2 * elongation + sunMeanAnomaly)) + 0.053 * Math.sin(radians(meanAnomalyDegrees + 2 * elongation))
+        + 0.046 * Math.sin(radians(2 * elongation - sunMeanAnomaly)) + 0.041 * Math.sin(radians(meanAnomalyDegrees - sunMeanAnomaly))
+        - 0.035 * Math.sin(radians(elongation)) - 0.031 * Math.sin(radians(meanAnomalyDegrees + sunMeanAnomaly))
+        - 0.015 * Math.sin(radians(2 * argumentLatitude - 2 * elongation)) + 0.011 * Math.sin(radians(meanAnomalyDegrees - 4 * elongation));
+      latitude += -0.173 * Math.sin(radians(argumentLatitude - 2 * elongation)) - 0.055 * Math.sin(radians(meanAnomalyDegrees - argumentLatitude - 2 * elongation))
+        - 0.046 * Math.sin(radians(meanAnomalyDegrees + argumentLatitude - 2 * elongation)) + 0.033 * Math.sin(radians(argumentLatitude + 2 * elongation))
+        + 0.017 * Math.sin(radians(2 * meanAnomalyDegrees + argumentLatitude));
+      longitude = degrees(longitude) * DEG;
+      latitude *= DEG;
+      const obliquity = (23.4393 - 0.0000004 * days) * DEG;
+      const rightAscension = Math.atan2(Math.sin(longitude) * Math.cos(obliquity) - Math.tan(latitude) * Math.sin(obliquity), Math.cos(longitude));
+      const declination = Math.asin(Math.sin(latitude) * Math.cos(obliquity) + Math.cos(latitude) * Math.sin(obliquity) * Math.sin(longitude));
+      return { ra: degrees(rightAscension / DEG) / 15, dec: declination / DEG };
+    }
+
+    function chartPoint(position) {
+      const radius = RADIUS * (90 - position.altitude) / 90;
+      const azimuth = position.azimuth * DEG;
+      return { x: CENTER.x + radius * Math.sin(azimuth), y: CENTER.y - radius * Math.cos(azimuth) };
+    }
+
+    function localDateAt(hour) {
+      const wholeHour = Math.floor(hour);
+      const minutes = Math.round((hour - wholeHour) * 60);
+      return new Date(Date.UTC(2027, 0, 14, wholeHour + 8, minutes));
+    }
+
+    function formatTime(hour) {
+      const normalizedHour = Math.floor(hour);
+      const minutes = Math.round((hour - normalizedHour) * 60);
+      return `${normalizedHour > 12 ? normalizedHour - 12 : normalizedHour}:${String(minutes).padStart(2, "0")} pm`;
+    }
+
+    function compassDirection(azimuth) {
+      return ["North", "North-northeast", "Northeast", "East-northeast", "East", "East-southeast", "Southeast", "South-southeast", "South", "South-southwest", "Southwest", "West-southwest", "West", "West-northwest", "Northwest", "North-northwest"][Math.round(azimuth / 22.5) % 16];
+    }
+
+    function planetPosition(planet, hour) {
+      const lowerIndex = hour < 20 ? 0 : 1;
+      const lower = planet.samples[lowerIndex];
+      const upper = planet.samples[lowerIndex + 1];
+      const fraction = (hour - lower.hour) / (upper.hour - lower.hour);
+      return {
+        azimuth: lower.azimuth + (upper.azimuth - lower.azimuth) * fraction,
+        altitude: lower.altitude + (upper.altitude - lower.altitude) * fraction
+      };
+    }
+
+    function starRadius(magnitude) { return Math.max(2.1, Math.min(6, 5.4 - magnitude * 0.8)); }
+    function el(name, attributes = {}, text = "") {
+      const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+      for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, value);
+      if (text) node.textContent = text;
+      return node;
+    }
+
+    function renderChart() {
+      const hour = Number(timeSlider.value);
+      const date = localDateAt(hour);
+      const positions = new Map(stars.map((star) => [star.id, { ...star, ...horizontal(star.ra, star.dec, date) }]));
+      const visiblePositions = new Map([...positions].filter(([, position]) => position.altitude > 0));
+      const planetPositions = new Map(planets.map((planet) => [planet.id, planetPosition(planet, hour)]));
+      const moonCoordinates = moonEquatorial(date);
+      const moon = horizontal(moonCoordinates.ra, moonCoordinates.dec, date);
+      const activeGroup = selectedId === "pleiades" ? "taurus" : selectedId;
+      const title = selectedId in objects ? objects[selectedId].title : "Joshua Tree night sky";
+      const nodes = [
+        el("title", { id: "chart-title" }, `Visible sky above Joshua Tree at ${formatTime(hour)}`),
+        el("desc", { id: "chart-description" }, `${title} and visible bright stars. The outer circle is the horizon; north is at the top and east is on the right.`),
+        el("circle", { cx: CENTER.x, cy: CENTER.y, r: RADIUS, class: "sky-disc" })
+      ];
+
+      for (const altitude of [30, 60]) {
+        const ringRadius = RADIUS * (90 - altitude) / 90;
+        nodes.push(el("circle", { cx: CENTER.x, cy: CENTER.y, r: ringRadius, class: "altitude-ring" }));
+        nodes.push(el("text", { x: CENTER.x + 5, y: CENTER.y - ringRadius + 14, class: "altitude-label" }, `${altitude}°`));
+      }
+      for (let azimuth = 0; azimuth < 360; azimuth += 45) {
+        const end = chartPoint({ altitude: 0, azimuth });
+        nodes.push(el("line", { x1: CENTER.x, y1: CENTER.y, x2: end.x, y2: end.y, class: "azimuth-spoke" }));
+      }
+      for (const [label, azimuth] of [["N", 0], ["NE", 45], ["E", 90], ["SE", 135], ["S", 180], ["SW", 225], ["W", 270], ["NW", 315]]) {
+        const point = chartPoint({ altitude: -6, azimuth });
+        nodes.push(el("text", { x: point.x, y: point.y, class: "compass" }, label));
+      }
+
+      for (const [group, sequence] of lines) {
+        let pathData = "";
+        let drawing = false;
+        for (const id of sequence) {
+          const position = visiblePositions.get(id);
+          if (!position) { drawing = false; continue; }
+          const point = chartPoint(position);
+          pathData += `${drawing ? "L" : "M"}${point.x.toFixed(1)} ${point.y.toFixed(1)} `;
+          drawing = true;
+        }
+        if (pathData) nodes.push(el("path", { d: pathData, class: `constellation-line${activeGroup === group ? " selected" : ""}` }));
+      }
+
+      for (const [id, position] of visiblePositions) {
+        const point = chartPoint(position);
+        const selected = activeGroup === position.group || selectedId === id;
+        const dot = el("circle", {
+          cx: point.x, cy: point.y, r: starRadius(position.mag),
+          class: `star-dot${selected ? " selected" : ""}`, "aria-hidden": "true"
+        });
+        nodes.push(dot);
+        if (position.mag < 0.5 || (activeGroup === position.group && position.mag < 1.6)) {
+          const offsetX = point.x > CENTER.x + 100 ? -7 : 7;
+          nodes.push(el("text", { x: point.x + offsetX, y: point.y - 6, class: "star-label", "text-anchor": offsetX < 0 ? "end" : "start" }, position.name));
+        }
+      }
+
+      const moonPoint = chartPoint(moon);
+      if (moon.altitude > 0) {
+        nodes.push(el("circle", { cx: moonPoint.x, cy: moonPoint.y, r: 7, class: "moon-mark" }));
+        nodes.push(el("text", { x: moonPoint.x + 10, y: moonPoint.y - 9, class: "moon-label" }, "Moon"));
+      }
+
+      for (const planet of planets) {
+        const position = planetPositions.get(planet.id);
+        if (position.altitude <= 0) continue;
+        const point = chartPoint(position);
+        nodes.push(el("circle", { cx: point.x, cy: point.y, r: 8, class: "planet-mark" }));
+        nodes.push(el("text", { x: point.x + 11, y: point.y - 8, class: "planet-label" }, planet.name));
+      }
+
+      const targetCoordinates = {
+        pleiades: { ra: 3.7914, dec: 24.105, label: "Pleiades" },
+        "orion-nebula": { ra: 5.5881, dec: -5.3911, label: "M42" },
+        "double-cluster": { ra: 2.325, dec: 57.13, label: "Double Cluster" },
+        andromeda: { ra: 0.7123, dec: 41.269, label: "M31" }
+      };
+      for (const [id, target] of Object.entries(targetCoordinates)) {
+        const position = horizontal(target.ra, target.dec, date);
+        if (position.altitude <= 0) continue;
+        const point = chartPoint(position);
+        const selected = (id === "pleiades" && selectedId === "pleiades") || (id === "andromeda" && selectedId === "andromeda");
+        nodes.push(el("circle", { cx: point.x, cy: point.y, r: selected ? 8 : 6, class: `object-mark${selected ? " selected" : ""}` }));
+        const labelY = id === "orion-nebula" ? point.y - 22 : point.y + 13;
+        nodes.push(el("text", { x: point.x + 9, y: labelY, class: "object-label" }, target.label));
+      }
+
+      nodes.push(el("text", { x: CENTER.x, y: 682, class: "below-label" }, "Outer edge = horizon · inner rings = 30° and 60° altitude"));
+      svg.replaceChildren(...nodes);
+      timeReadout.value = formatTime(hour);
+      timeReadout.textContent = formatTime(hour);
+      if (selectedId in objects) {
+        const object = objects[selectedId];
+        const position = object.planet ? planetPositions.get(object.planet) : positions.get(object.star);
+        selectedTitle.textContent = object.title;
+        finderCopy.textContent = `${object.copy} ${object.target}`;
+        if (position) {
+          directionReadout.textContent = compassDirection(position.azimuth);
+          altitudeReadout.textContent = position.altitude > 0
+            ? `· ${Math.round(position.altitude)}° up`
+            : `· ${Math.round(Math.abs(position.altitude))}° below horizon`;
+        }
+      }
+    }
+
+    function select(id) {
+      if (!(id in objects)) return;
+      selectedId = id;
+      document.querySelectorAll(".target-list button").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.id === id)));
+      renderChart();
+    }
+
+    timeSlider.addEventListener("input", renderChart);
+    document.getElementById("target-list").addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-id]");
+      if (button) select(button.dataset.id);
+    });
+    document.getElementById("red-toggle").addEventListener("click", (event) => {
+      const enabled = document.body.classList.toggle("red-mode");
+      event.currentTarget.setAttribute("aria-pressed", String(enabled));
+    });
+    renderChart();
+  </script>
+</body>
+</html>
